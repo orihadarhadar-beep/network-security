@@ -21,7 +21,7 @@ def start_server(save_dir, server_ip, server_port):
                 with conn:
                     file_name = conn.recv(1024)
                     full_path = os.path.join(save_dir, os.path.basename(file_name.decode()))
-                    conn.sendall(b"ACK")  # Acknowledge receipt of the file name
+                    conn.sendall(b"ACK")
                     with open(full_path, "wb") as f:
                         while True:
                             data = conn.recv(1024)
