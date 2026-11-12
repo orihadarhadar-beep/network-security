@@ -6,7 +6,7 @@ from tkinter_class import ScannerWindow
 virus_total_api_scan_url = 'https://www.virustotal.com/vtapi/v2/file/scan'
 virus_total_api_report_url = 'https://www.virustotal.com/vtapi/v2/file/report'
 virus_total_api_key = "b4c5a45455b4313a8416b682941b65fc686bc0e4dc76d7a03bca3734ef26eedb"
-GUI = None
+GUI = ScannerWindow("Antivirus Scanner")
 is_virus_detected = False
 
 def scan_file(file_path):
@@ -79,7 +79,6 @@ def create_test_virus(path):
         f.write(b"X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*")
 
 if __name__ == "__main__":
-    GUI = ScannerWindow("Antivirus Scanner")
     path = GUI.get_input("Enter the directory path to scan:")
     create_test_virus(os.path.join(path, "eicar.txt"))
     scan_dir(path)
