@@ -26,17 +26,13 @@ def read_file(file_path):
         return ""
 
 
-def print_word_count(word_count_result, N):
-    if word_count_result is None:
+def print_word_count(N_best_word_count_result):
+    if N_best_word_count_result is None:
         return
     print("Top words:")
-    for word, count in word_count_result:
-        if N > 1:
-            print(f"{word}: {count}, ", end="")
-            N -= 1
-        else:
-            print(f"{word}: {count}")
-            return
+    for word, count in N_best_word_count_result:
+        print(f"{word}: {count}")
+
 
         
 if __name__ == "__main__":
@@ -51,4 +47,4 @@ if __name__ == "__main__":
         sys.exit(1)
     path = input("Enter the file path: ")
     result = word_count(path, N_num)
-    print_word_count(result, N_num)
+    print_word_count(result[:N_num])
