@@ -44,8 +44,7 @@ def get_report(scan_id):
         if result["verbose_msg"] == "Your resource is queued for analysis":
             print("Waiting for file to be analyzed...")
             time.sleep(20)
-            get_report(scan_id)
-            return False
+            return get_report(scan_id)
         else:
             return result["positives"] > 0
     else:
