@@ -75,17 +75,15 @@ def scan_dir(path):
         return 
     return 
     
-def print_files(files):
-    if not files:
-        print("No files found.")
-    else:
-        print("Files found:")
-        for file in files:
-            print(file)
+def create_test_virus(path):
+    with open(path, "wb") as f:
+        f.write(b"X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*")
 
 if __name__ == "__main__":
     GUI = ScannerWindow("Antivirus Scanner")
-    scan_dir(GUI.get_input("Enter the directory path to scan:"))
+    path = GUI.get_input("Enter the directory path to scan:")
+    create_test_virus(os.path.join(path, "eicar.txt"))
+    scan_dir(path)
     if is_virus_detected:
         GUI.print_msg("Scan finished. Virus detected!", is_warning=True)
     else:
