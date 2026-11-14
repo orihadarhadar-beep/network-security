@@ -9,11 +9,9 @@ class ScannerWindow:
         self.root.geometry("650x420")
         self.root.configure(bg="#1e1e1e")
 
-        # משתנה להמתנה לקלט מהמשתמש (חוסם את הריצה עד ללחיצה, בלי לתקוע את החלון)
         self._input_var = tk.StringVar()
         self._waiting_for_input = False
 
-        # מסגרת עליונה עבור אזור הקלט (Input)
         self.input_frame = tk.Frame(self.root, bg="#1e1e1e", pady=10, padx=10)
         self.input_frame.pack(fill=tk.X)
 
@@ -31,7 +29,7 @@ class ScannerWindow:
 
         self.submit_btn = tk.Button(
             entry_row,
-            text="אישור",
+            text="submit",
             command=self._submit_input,
             bg="#007acc",
             fg="white",
@@ -41,7 +39,6 @@ class ScannerWindow:
         )
         self.submit_btn.pack(side=tk.LEFT, padx=(8, 0))
 
-        # אזור ההדפסות (Output)
         self.output_area = scrolledtext.ScrolledText(
             self.root,
             state=tk.DISABLED,
@@ -54,7 +51,6 @@ class ScannerWindow:
         )
         self.output_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
 
-        # הגדרת עיצוב לשני מצבי ההדפסה
         self.output_area.tag_config("normal", foreground="#d4d4d4")
         self.output_area.tag_config("warning", foreground="#ff4d4d", font=("Consolas", 10, "bold"))
 
@@ -64,14 +60,12 @@ class ScannerWindow:
             self._input_var.set(self.entry.get())
 
     def clear_output(self):
-        """מנקה את חלון ההדפסות"""
         self.output_area.config(state=tk.NORMAL)
         self.output_area.delete("1.0", tk.END)
         self.output_area.config(state=tk.DISABLED)
         self.root.update()
 
-    def get_input(self, prompt_text="הכנס ערך:"):
-        """מציג שורת קלט, ממתין לתשובת המשתמש, ומנקה את החלון לקראת ההדפסות הבאות"""
+    def get_input(self, prompt_text="Enter path:"):
         self.prompt_label.config(text=prompt_text)
         self.entry.delete(0, tk.END)
         self.entry.config(state=tk.NORMAL)
@@ -79,11 +73,9 @@ class ScannerWindow:
         self.entry.focus()
 
         self._waiting_for_input = True
-        self.root.wait_variable(self._input_var)  # מחכה שהמשתמש ילחץ Enter או "אישור"
-
+        self.root.wait_variable(self._input_var)  
         user_value = self._input_var.get()
 
-        # ניקוי החלון ונעילת שדה הקלט כדי לפנות מקום להדפסות
         self.entry.delete(0, tk.END)
         self.entry.config(state=tk.DISABLED)
         self.submit_btn.config(state=tk.DISABLED)
@@ -93,30 +85,24 @@ class ScannerWindow:
         return user_value
 
     def print_msg(self, text, is_warning=False):
-        """מדפיס שורה לחלון: מצב רגיל (False) או מצב אזהרה באדום עם משולש (True)"""
         self.output_area.config(state=tk.NORMAL)
         if is_warning:
             self.output_area.insert(tk.END, f"⚠️ {text}\n", "warning")
         else:
             self.output_area.insert(tk.END, f"{text}\n", "normal")
 
-        self.output_area.see(tk.END)  # גלילה אוטומטית לשורה האחרונה
+        self.output_area.see(tk.END)  
         self.output_area.config(state=tk.DISABLED)
-        self.root.update()  # מרענן את החלון מיד כדי שההדפסה תופיע בזמן אמת
+        self.root.update()  
 
-
-# --- דוגמה לשימוש והשתלבות עם קוד הסריקה שלך ---
 if __name__ == "__main__":
     app = ScannerWindow("Antivirus Scanner")
 
-    # 1. קבלת הנתיב מהמשתמש (ברגע שיאשר, החלון יתנקה אוטומטית)
     folder_path = app.get_input("Enter the directory path to scan:")
 
-    # 2. הדפסות רגילות והדפסות אזהרה על אותו חלון
     app.print_msg(f"Scanning directory: {folder_path}")
     app.print_msg("C:\\test\\clean.txt is not virus")
     app.print_msg("VIRUS DETECTED!!! Filepath: C:\\test\\eicar.txt", is_warning=True)
     app.print_msg("Scan finished.")
 
-    # השארת החלון פתוח בסיום הריצה
     app.root.mainloop()

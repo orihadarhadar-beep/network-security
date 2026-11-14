@@ -8,14 +8,10 @@ import threading
 
 
 
-def create_server():
-    server_socket = socket.socket(
-        socket.AF_INET, socket.SOCK_STREAM
-    )  # Create TCP Socket object
-    server_socket.bind(("127.0.0.1", 8080))  # Define the IP + Port for the server
-    server_socket.listen(
-        5
-    )  # Define maximum amount of connections waiting to be accepted
+def create_server(port = 1337):
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(("0.0.0.0", port)) 
+    server_socket.listen(5)
     print(f"Listening for new connections")
     return server_socket
 
@@ -26,37 +22,57 @@ def accept_client(server_socket):
     return client_socket
 
 
+def safe_send(sock, message, exit_fn=os._exit):
+    try:
+        sock.sendall(message)
+    except (ConnectionError, ConnectionResetError, BrokenPipeError, OSError):
+        print("Client disconnected")
+        exit_fn(0)
 
-def mouse_thread(client_socket):
+
+def mouse_lisener_thread(client_socket,exit_df = os._exit):
     try:
         def on_move(x, y):
             message = f"move,{x},{y}\n"
-            client_socket.send(message.encode())
+            safe_send(client_socket,message.encode(),exit_df)
 
         def on_click(x, y, button, pressed):
             message = f"click,{x},{y},{button.name},{pressed}\n"
-            client_socket.send(message.encode())
+            safe_send(client_socket,message.encode(),exit_df)
 
         def on_scroll(x, y, dx, dy):
             message = f"scroll,{x},{y},{dx},{dy}\n"
-            client_socket.send(message.encode())
+            safe_send(client_socket,message.encode(),exit_df)
 
 
         with MouseListener(on_click=on_click, on_scroll=on_scroll,on_move=on_move) as listener:
             listener.join()
-    except Exception as e:
-        print(f"Eror :{e}")
+    except ConnectionError:
+        print("Client disconnected")
+        exit_df(0)
+    except ConnectionResetError:
+        print("Client disconnected")
+        exit_df(0)  
 
 
 
-def keyboard_lisener_thread(client_socket):
+def keyboard_lisener_thread(client_socket,exit_df = os._exit):
     try:
         def send_keyboard_click(key):
+
             if key == Key.esc:
                 print("got esc------")
-                client_socket.close()
-                os._exit(0)
+                try:
+                    client_socket.close()
+                except Exception:
+                    pass
+                exit_df(0)
+
+
             if hasattr(key, "char") and key.char is not None:
+                # Ignore ASCII control characters (like Ctrl+M -> '\r') since Ctrl itself is sent separately
+                if ord(key.char) < 32:
+                    return
                 key_str = f"CHAR:{key.char}\n"
             elif hasattr(key, "name"):
                 key_str = f"SPECIAL:{key.name}\n"
@@ -64,21 +80,25 @@ def keyboard_lisener_thread(client_socket):
                 key_str = f"VK:{key.vk}\n"
             
             client_socket.send(key_str.encode())
-            print(f"Sent key: {key}")
+
 
         with KeyboardListener(on_press=send_keyboard_click) as listener:
             listener.join()
-    except Exception as e:
-        print(f"Eror :{e}")
+    except ConnectionError:
+        print("Client disconnected")
+        exit_df(0) 
+    except ConnectionResetError:
+        print("Client disconnected")
+        exit_df(0)  
 
 
 def main(server_socket):    
     client_socket = accept_client(server_socket)
-    thread_keyboard = threading.Thread(target= keyboard_lisener_thread, args=(client_socket,))
+    thread_keyboard = threading.Thread(target= keyboard_lisener_thread, args=(client_socket,),daemon=True,)
     thread_keyboard.start()
 
     client_socket = accept_client(server_socket)
-    thread_mouse = threading.Thread(target= mouse_thread, args=(client_socket,))
+    thread_mouse = threading.Thread(target= mouse_lisener_thread, args=(client_socket,),daemon=True,)
     thread_mouse.start()
 
     thread_keyboard.join()
