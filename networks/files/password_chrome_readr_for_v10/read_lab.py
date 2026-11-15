@@ -27,19 +27,31 @@ if __name__ == "__main__":
     db_path = "mock_login_data.db"
     login_data_copy = "mock_login_data_temp.db"
     shutil.copyfile(db_path, login_data_copy)
+    conn = None
+    cursor = None
 
-    conn = sqlite3.connect(login_data_copy)
-    cursor = conn.cursor()
+    try:
+        conn = sqlite3.connect(login_data_copy)
+        cursor = conn.cursor()
 
-    encrypted_data = cursor.execute("SELECT origin_url, username_value, password_value FROM logins;").fetchall()
-    windows_userkey = get_encryption_key()
-    
-    print("--- Decrypted Lab Results ---")
-    for row in encrypted_data:
-        site_url, username, encrypted_password = row
-        password = decrypt_password(encrypted_password, windows_userkey)
-        if len(password) > 0 and len(username) > 0:
-            print(f"URL: {site_url} | Username: {username} | Password: {password}")
+        encrypted_data = cursor.execute("SELECT origin_url, username_value, password_value FROM logins;").fetchall()
+        windows_userkey = get_encryption_key()
+        
+        print("--- Decrypted Lab Results ---")
+        for row in encrypted_data:
+            site_url, username, encrypted_password = row
+            password = decrypt_password(encrypted_password, windows_userkey)
+            if len(password) > 0 and len(username) > 0:
+                print(f"URL: {site_url} | Username: {username} | Password: {password}")
 
-    conn.close()
-    os.remove(login_data_copy) 
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+        lab_files = [login_data_copy, db_path, "mock_local_state.json"]
+        for file_name in lab_files:
+            if os.path.exists(file_name):
+                os.remove(file_name)
+                print(f"[+] Cleaned up: {file_name}") 
