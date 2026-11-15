@@ -1,0 +1,11 @@
+# SSL keys & certificates
+*.key
+*.crt
+
+# Test sandbox & local keys
+test_sandbox/
+keys/
+
+# Python virtual environment
+.venv/
+__pycache__/
