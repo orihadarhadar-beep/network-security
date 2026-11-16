@@ -10,6 +10,7 @@ keys/
 .venv/
 __pycache__/
 auth_key.txt
+auth_key2.txt
 cached_hashes.txt
 *.yar
 .venv/
