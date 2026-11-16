@@ -9,3 +9,7 @@ keys/
 # Python virtual environment
 .venv/
 __pycache__/
+auth_key.txt
+cached_hashes.txt
+*.yar
+.venv/
