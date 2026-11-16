@@ -192,7 +192,7 @@ if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     
     TARGET_DIR = "C:\\Users\\hyani\\Downloads\\try"
-    AUTH_KEY_FILE = os.path.join(BASE_DIR, "auth_key.txt")
+    AUTH_KEY_FILE = os.path.join(BASE_DIR, "auth_key2.txt")
     YARA_FILE = os.path.join(BASE_DIR, "yara-rules-core.yar")
 
     scanner = AntiVirus(dir_path=TARGET_DIR, auth_key_path=AUTH_KEY_FILE, yara_rules_path=YARA_FILE)
