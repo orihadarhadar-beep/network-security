@@ -6,6 +6,8 @@ import hashlib
 import zipfile
 import requests
 
+from tkinter_class import ScannerWindow
+
 try:
     import yara
     YARA_AVAILABLE = True
@@ -22,7 +24,7 @@ def get_auth_key(auth_key_path):
 class AntiVirus:
     CACHE_TTL_SECONDS = 24 * 60 * 60  # 24 hours
 
-    def __init__(self, dir_path, auth_key_path, yara_rules_path=None, cache_file_path=None):
+    def __init__(self, dir_path, auth_key_path, yara_rules_path=None, cache_file_path=None,GUI = None):
         self.dir_path = dir_path
         self.auth_key = get_auth_key(auth_key_path)
         
@@ -32,6 +34,8 @@ class AntiVirus:
         # Load hashes from local cache if valid, otherwise download fresh list
         self.known_hashes = self.get_hashlist()
         self.yara_rules = self.load_yara_rules(yara_rules_path)
+
+        self.GUI = GUI
 
     def is_cache_valid(self):
         if not os.path.exists(self.cache_file_path):
@@ -174,6 +178,7 @@ class AntiVirus:
                 item_path = os.path.join(path, item)
                 if os.path.isfile(item_path):
                     if self.scan_file(item_path):
+                        self.print_GUI(f"VIRUS DETECTED!!! Filepath: {item_path}",True)
                         viruses.append(item_path)
                 elif os.path.isdir(item_path):
                     viruses.extend(self.scan_dir(item_path))
@@ -187,23 +192,30 @@ class AntiVirus:
 
         return viruses
 
+    def print_GUI(self,txt,is_warning=False):
+        if self.GUI:
+            self.GUI.print_msg(txt, is_warning)
 
 if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    
-    TARGET_DIR = "C:\\Users\\hyani\\Downloads\\try"
+    GUI = ScannerWindow("Antivirus Scanner")
+    path = GUI.get_input("Enter the directory path to scan:").strip()
+    TARGET_DIR = path if path else r"C:\\Users\\hyani\\Downloads\\try"
     AUTH_KEY_FILE = os.path.join(BASE_DIR, "auth_key2.txt")
     YARA_FILE = os.path.join(BASE_DIR, "yara-rules-core.yar")
 
-    scanner = AntiVirus(dir_path=TARGET_DIR, auth_key_path=AUTH_KEY_FILE, yara_rules_path=YARA_FILE)
+    scanner = AntiVirus(dir_path=TARGET_DIR, auth_key_path=AUTH_KEY_FILE, yara_rules_path=YARA_FILE,GUI = GUI)
     
     print(f"\nStarting scan on '{TARGET_DIR}'...")
     detected_viruses = scanner.scan_dir()
 
     print("\n--- Scan Complete ---")
     if detected_viruses:
+        GUI.print_msg("Scan finished. Virus detected!", is_warning=True)
         print(f"Found {len(detected_viruses)} malicious file(s):")
         for virus in detected_viruses:
             print(f" - {virus}")
     else:
+        GUI.print_msg("Scan finished. No viruses detected.")
         print("No threats detected.")
+    GUI.root.mainloop()
